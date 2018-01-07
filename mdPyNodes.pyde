@@ -274,8 +274,10 @@ pn = ''
 pg = '' #Buttons
 bg = '' #Background
 ig = '' #Input
+bz = '' #Bezier
 dragged = ''
 mStart = PVector(0,0)
+mPrev = PVector(0,0)
 prevW = 0
 prevH = 0
 scrollOff = 0
@@ -287,6 +289,7 @@ def setup():
     global pg
     global bg
     global ig
+    global bz
     global prevW
     global prevH
     size(1000,500)
@@ -295,6 +298,7 @@ def setup():
     pg = createGraphics(width, height)
     bg = createGraphics(width, height)
     ig = createGraphics(width, height)
+    bz = createGraphics(width, height)
     this.surface.setResizable(True)
     pn = mdPyNodeRender()
     pn.parse()
@@ -314,6 +318,7 @@ def draw():
     image(bg,0,0)
     image(pg,0,0)
     image(ig,0,0)
+    image(bz,0,0)
     if prevW != width or prevH != height:
         bg = createGraphics(width, height)
         pn.render(bg)
@@ -334,11 +339,33 @@ def mousePressed():
             dragged = button
     
 def mouseReleased():
+    global bz
     if PVector.dist(mStart,PVector(mouseX,mouseY)) < 5:
         #deal with it in click...
         pass
     else:
         print(dragged)
+    bz.beginDraw()
+    bz.clear()
+    bz.endDraw()
+
+def mouseDragged():
+    global bz
+    global mPrev
+    mCurr = PVector(mouseX,mouseY)
+    smooth = PVector.dist(mStart,mCurr)/2
+    bz.beginDraw()
+    if PVector.dist(mPrev,mCurr) > 0.1:
+        bz.clear()
+    if mCurr.x < mStart.x:
+        smooth = -smooth
+    bz.noFill()
+    bz.stroke(255)
+    bz.strokeWeight(2)
+    bz.bezier(mStart.x, mStart.y, mStart.x+smooth, mStart.y, mouseX-smooth, mouseY, mouseX, mouseY)
+    bz.endDraw()
+    image(bz,0,0)
+    mPrev = mCurr
 
 def mouseWheel(event):
     global scrollOff
