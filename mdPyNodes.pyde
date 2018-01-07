@@ -20,13 +20,13 @@ import re
 import mdPyNode
 import importlib
 from button import button
-import inspect
 
-inputting = False
-sketchName = ''
+isTyping = False
+strInput = ''
+
 
 class mdPyNodeRender:
-    
+
     def __init__(self):
         self.verbosity = 0
         self.optionsDict = {}
@@ -35,8 +35,9 @@ class mdPyNodeRender:
         self.maxWInputs = 1
         self.maxWOutputs = 1
         self.buttons = []
-        
-    def parseFolders(self,f):
+        self.sketchName = ''
+
+    def parseFolders(self, f):
         pyFiles = []
         # walk through all folders and sub folders
         for root, dirs, files in os.walk(f):
@@ -45,29 +46,29 @@ class mdPyNodeRender:
                 if os.path.splitext(f)[1] == '.py':
                     pyFiles.append(f)
         return pyFiles
-    
-    def parseFiles(self,fs):
+
+    def parseFiles(self, fs):
         nodes = {}
-        
+
         # for each file in the list of files
         for f in fs:
             hasmdPy = False
             # split the file's name by the dot (name and ext)
-            mname = re.split('\.',f)[0]
-            #module = importlib.import_module(mname)
+            mname = re.split('\.', f)[0]
+            # module = importlib.import_module(mname)
             # open the file
             c = ''
             func = ''
             with open(f, 'r') as fc:
                 isClass = False
                 for l in fc:
-                    if l.find('class') >=0 and l.find('(mdPyNode)') >= 0:
+                    if l.find('class') >= 0 and l.find('(mdPyNode)') >= 0:
                         if not hasmdPy:
                             # add a new dictionary entry for the file
-                            nodes.update({mname:{}})
+                            nodes.update({mname: {}})
                         hasmdPy = True
                         c = re.split('class |\(|:',l)[1]
-                        nodes[mname].update({c:{}})
+                        nodes[mname].update({c: {}})
                         isClass = True
                     if l.find('def') >= 0 and hasmdPy and l.find('__init__') == -1:
                         func = re.split('def |\(|:',l)[1]
@@ -102,9 +103,9 @@ class mdPyNodeRender:
             
     def renameSketch(self):
         global ig
-        global inputting
-        inputting = True
-        name = ''
+        global isTyping
+        global strInput
+        isTyping = True
         ig = createGraphics(width, height)
         ig.beginDraw()
         ig.clear()
@@ -113,8 +114,12 @@ class mdPyNodeRender:
         ig.fill(255)
         ig.textAlign(CENTER)
         st = "Please enter a new name"
-        if sketchName != '':
-            st = sketchName
+        if self.sketchName != '':
+            st = self.sketchName
+            strInput = st
+        elif strInput != '':
+            st = strInput
+            strInput = ''
         ig.text(st,width/2,height/2)
         ig.endDraw()
         image(ig,0,0)
@@ -146,12 +151,12 @@ class mdPyNodeRender:
         # setup the main stage
         bg.fill(color(255,255,255,80))
         wt = 100
-        if ig.textWidth(sketchName) > 100:
+        if ig.textWidth(strInput) > 100:
             ig.textSize(15)
-            wt = ig.textWidth(sketchName) + 4
+            wt = ig.textWidth(strInput) + 4
         bg.rect(100 + self.maxWInputs * txth + 5,5,wt,txth + 4)
         bg.fill(color(255))
-        bg.text(sketchName,100 + self.maxWInputs * txth + 7,txth+5)
+        bg.text(strInput,100 + self.maxWInputs * txth + 7,txth+5)
         self.buttons.append(button(self.renameSketch,100 + self.maxWInputs * txth + 5,5,wt,txth,'rename the sketch'))
         
         lineY = 0 + scrollOff
@@ -254,25 +259,25 @@ def mouseWheel(event):
     
 def keyPressed():
     global ig
-    global sketchName
-    if inputting == True:
+    global strInput
+    if isTyping == True:
         ig.beginDraw()
         ig.clear()
         ig.background(color(0,0,0,200))
         if key == ENTER:
-            inputting == False
+            isTyping == False
             ig.clear()
             ig.endDraw()
             pn.render(bg)
             return
         elif key == BACKSPACE:
-            sketchName = sketchName[:-1]
+            strInput = strInput[:-1]
         else:
-            sketchName += key
+            strInput += key
         ig.textSize(30)
         ig.fill(255)
         ig.textAlign(CENTER)
-        ig.text(sketchName,width/2,height/2)
+        ig.text(strInput,width/2,height/2)
             
         ig.endDraw()
             
