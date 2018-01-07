@@ -19,10 +19,13 @@ import os
 import re
 import mdPyNode
 import importlib
+import thread
 from button import button
+import time
 
 isTyping = False
 strInput = ''
+pressedEnter = False
 
 
 class mdPyNodeRender:
@@ -32,8 +35,10 @@ class mdPyNodeRender:
         self.optionsDict = {}
         self.tooltips = {}
         self.functions = {}
-        self.maxWInputs = 1
-        self.maxWOutputs = 1
+        self.inputs = {}
+        self.outputs = {}
+        self.maxWInputs = 15
+        self.maxWOutputs = 15
         self.buttons = []
         self.sketchName = ''
 
@@ -90,16 +95,82 @@ class mdPyNodeRender:
         
     def parse(self):
         self.optionsDict = self.parseFiles(self.parseFolders(os.getcwd()))
+
+    def doAddNewInput(self):
+        global pressedEnter
+        global inputs
+        global strInput
+        while not pressedEnter:
+            time.sleep(0.1)
+            pass
+        pressedEnter = False
+        self.inputs.update({strInput: 0})
+        if strInput > self.maxWInputs:
+            ig.textSize(15)
+            self.maxWInputs = ig.textWidth(strInput + " >")
+        strInput = ''
+        pn.render(bg)
         
     def addNewInput(self):
-        global bg
-        print('Adding Input...')
-        self.render(bg)
+        global ig
+        global isTyping
+        isTyping = True
+        ig = createGraphics(width, height)
+        ig.beginDraw()
+        ig.clear()
+        ig.background(color(0,0,0,200))
+        ig.textSize(30)
+        ig.fill(255)
+        ig.textAlign(CENTER)
+        st = "Please enter a name for your input"
+        strInput = ''
+        ig.text(st,width/2,height/2)
+        ig.endDraw()
+        image(ig,0,0)
+        thread.start_new_thread( self.doAddNewInput, ())
+
+    def doAddNewOutput(self):
+        global pressedEnter
+        global outputs
+        global strInput
+        while not pressedEnter:
+            time.sleep(0.1)
+            pass
+        pressedEnter = False
+        self.outputs.update({strInput: 0})
+        if strInput > self.maxWOutputs:
+            ig.textSize(15)
+            self.maxWOutputs = ig.textWidth(strInput + " >")
+        strInput = ''
+        pn.render(bg)
     
     def addNewOutput(self):
-        global bg
-        print('Adding Output...')
-        self.render(bg)
+        global ig
+        global isTyping
+        global strOutput
+        isTyping = True
+        ig = createGraphics(width, height)
+        ig.beginDraw()
+        ig.clear()
+        ig.background(color(0,0,0,200))
+        ig.textSize(30)
+        ig.fill(255)
+        ig.textAlign(CENTER)
+        st = "Please enter a name for your output"
+        strOutput = ''
+        ig.text(st,width/2,height/2)
+        ig.endDraw()
+        image(ig,0,0)
+        thread.start_new_thread( self.doAddNewOutput, ())
+
+    def doRenameSketch(self):
+        global pressedEnter
+        while not pressedEnter:
+            time.sleep(0.1)
+            pass
+        pressedEnter = False
+        self.sketchName = strInput
+        pn.render(bg)
             
     def renameSketch(self):
         global ig
@@ -123,6 +194,7 @@ class mdPyNodeRender:
         ig.text(st,width/2,height/2)
         ig.endDraw()
         image(ig,0,0)
+        thread.start_new_thread( self.doRenameSketch, ())
         
     def render(self,bg):
         global scrollOff
@@ -140,24 +212,43 @@ class mdPyNodeRender:
         
         # setup the input and output areas
         bg.fill(color(255,255,255,80))
-        bg.rect(100,0,self.maxWInputs * txth,height)
-        bg.rect(width-self.maxWOutputs * txth,0,self.maxWOutputs * txth,height)
+        bg.rect(100,0,self.maxWInputs + 4,height)
+        bg.rect(width-self.maxWOutputs - 4,0,self.maxWOutputs + 4 * txth,height)
         bg.fill(color(255))
         bg.text("+",101,txth)
         self.buttons.append(button(self.addNewInput,100,0,txth,txth,'add a new input'))
+
+        lineCount = 0
+        for inpt in self.inputs:
+            print(inpt)
+            bg.fill(color(200))
+            bg.text(inpt,102,lineCount + 5 + 15 * 2)
+            bg.fill(color(220))
+            bg.ellipse(95+self.maxWInputs, lineCount + 1 + 15 * 2, 8, 8)
+            lineCount += 16
+
+        lineCount = 0
+        for outpt in self.outputs:
+            print(outpt)
+            bg.fill(color(200))
+            bg.text(outpt,width-self.maxWOutputs +10,lineCount + 5 + 15 * 2)
+            bg.fill(color(220))
+            bg.ellipse(width-self.maxWOutputs + 2, lineCount + 1 + 15 * 2, 8, 8)
+            lineCount += 16
+
         bg.text("+",width-txth+1,txth)
         self.buttons.append(button(self.addNewOutput,width-txth,0,txth,txth,'add a new output'))
         
         # setup the main stage
         bg.fill(color(255,255,255,80))
         wt = 100
-        if ig.textWidth(strInput) > 100:
+        if ig.textWidth(self.sketchName) > 100:
             ig.textSize(15)
-            wt = ig.textWidth(strInput) + 4
-        bg.rect(100 + self.maxWInputs * txth + 5,5,wt,txth + 4)
+            wt = ig.textWidth(self.sketchName) + 4
+        bg.rect(100 + self.maxWInputs + 4 + 5,5,wt,txth + 4)
         bg.fill(color(255))
-        bg.text(strInput,100 + self.maxWInputs * txth + 7,txth+5)
-        self.buttons.append(button(self.renameSketch,100 + self.maxWInputs * txth + 5,5,wt,txth,'rename the sketch'))
+        bg.text(self.sketchName,100 + self.maxWInputs + 4 + 7,txth+5)
+        self.buttons.append(button(self.renameSketch,100 + self.maxWInputs + 4 + 5,5,wt,txth,'rename the sketch'))
         
         lineY = 0 + scrollOff
         bg.fill(color(255))
@@ -260,6 +351,7 @@ def mouseWheel(event):
 def keyPressed():
     global ig
     global strInput
+    global pressedEnter
     if isTyping == True:
         ig.beginDraw()
         ig.clear()
@@ -268,7 +360,7 @@ def keyPressed():
             isTyping == False
             ig.clear()
             ig.endDraw()
-            pn.render(bg)
+            pressedEnter = True
             return
         elif key == BACKSPACE:
             strInput = strInput[:-1]
