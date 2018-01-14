@@ -18,7 +18,6 @@
 import os
 import re
 import mdPyNode
-import importlib
 import thread
 from button import button
 import time
@@ -26,7 +25,18 @@ import time
 isTyping = False
 strInput = ''
 pressedEnter = False
-
+pn = ''
+pg = '' #Buttons
+bg = '' #Background
+ig = '' #Input
+bz = '' #Bezier
+dragged = ''
+mStart = PVector(0,0)
+mPrev = PVector(0,0)
+prevW = 0
+prevH = 0
+scrollOff = 0
+tooltipDisplayed = False
 
 class mdPyNodeRender:
 
@@ -269,19 +279,6 @@ class mdPyNodeRender:
         bg.endDraw()
         image(bg,0,0)
         
-        
-pn = ''
-pg = '' #Buttons
-bg = '' #Background
-ig = '' #Input
-bz = '' #Bezier
-dragged = ''
-mStart = PVector(0,0)
-mPrev = PVector(0,0)
-prevW = 0
-prevH = 0
-scrollOff = 0
-tooltipDisplayed = False
 
 def setup():
     global pn

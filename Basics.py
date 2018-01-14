@@ -1,5 +1,6 @@
 import mdPyNode
 
+
 class types(mdPyNode):
     """data types"""
      
@@ -18,6 +19,19 @@ class types(mdPyNode):
     def bool(self,x):
         """true or false"""
         return boolean(x)
+
+class loops(mdPyNode):
+    """Loop functions"""
+
+    def forLoop(self, num = 0, func = lambda: False):
+        """for loop"""
+        for i in range(num):
+            func()
+
+    def whileLoop(self, condition = 0, func = lambda: False):
+        """while loop"""
+        while condition:
+            func()
     
 class math(mdPyNode):
     """Math Functions"""
