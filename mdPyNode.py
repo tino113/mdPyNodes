@@ -4,6 +4,7 @@ class mdPyNode():
 
     def __init__(self):
     	self.name = 'mdPyNode'
+    	self.loc = PVector(0,0)
         self.inputDict = {}
         self.outputDict = {}
         self.inputConnections = {}

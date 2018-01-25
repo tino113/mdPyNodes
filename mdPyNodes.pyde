@@ -21,6 +21,7 @@ import mdPyNode
 import thread
 from button import button
 import time
+from copy import copy
 
 isTyping = False
 strInput = ''
@@ -47,6 +48,7 @@ class mdPyNodeRender:
         self.functions = {}
         self.inputs = {}
         self.outputs = {}
+        self.nodes = []
         self.maxWInputs = 15
         self.maxWOutputs = 15
         self.buttons = []
@@ -304,6 +306,16 @@ class mdPyNodeRender:
                     bg.text("- " + funName,30,lineY + txth)
                     self.buttons.append(button(func,30,lineY,textWidth("- " + funName)+8,txth,self.tooltips[funName],0.5,'function'))
                     lineY += txth + 1
+
+        # Draw the Nodes
+        for nds in self.nodes:
+        	nd = createGraphics(width, height)
+        	nd.beginDraw()
+        	nd.clear()
+        	nd.translate(nds.loc.x-10,nds.loc.y-10)
+        	nds.draw(nd)
+        	nd.endDraw()
+        	bg.image(nd,0,0)
         bg.endDraw()
         image(bg,0,0)
         
@@ -367,11 +379,17 @@ def mousePressed():
     
 def mouseReleased():
     global bz
+    global pn
+    global bg
     if PVector.dist(mStart,PVector(mouseX,mouseY)) < 5:
         #deal with it in click...
         pass
     else:
-        pass
+        if dragged.type == 'function':
+            newNode = copy(dragged.function)
+            newNode.loc = PVector(mouseX,mouseY)
+            pn.nodes.append(newNode)
+            pn.render(bg)
     bz.beginDraw()
     bz.clear()
     bz.endDraw()
