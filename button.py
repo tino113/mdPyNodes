@@ -3,7 +3,7 @@ import datetime
 
 class button():
     
-    def __init__(self,function=lambda: False,x=0,y=0,w=0,h=0,tooltip='',tooltipTime=0.5):
+    def __init__(self,function=lambda: False,x=0,y=0,w=0,h=0,tooltip='',tooltipTime=0.5,btype = 'button'):
         self.x = x
         self.y = y
         self.w = w
@@ -14,6 +14,7 @@ class button():
         self.tooltipTime = tooltipTime
         self.tooltipDisplayed = False
         self.function = function
+        self.type = btype
         self.drawn = False
         
     def debugDraw(self):

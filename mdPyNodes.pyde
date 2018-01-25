@@ -30,7 +30,7 @@ pg = '' #Buttons
 bg = '' #Background
 ig = '' #Input
 bz = '' #Bezier
-dragged = ''
+dragged = button()
 mStart = PVector(0,0)
 mPrev = PVector(0,0)
 prevW = 0
@@ -76,6 +76,8 @@ class mdPyNodeRender:
             func = ''
             with open(f, 'r') as fc:
                 isClass = False
+                isFunc = False
+                x = mdPyNode.mdPyNode()
                 for l in fc:
                     if l.find('class') >= 0 and l.find('(mdPyNode)') >= 0:
                         if not hasmdPy:
@@ -86,15 +88,39 @@ class mdPyNodeRender:
                         nodes[mname].update({c: {}})
                         isClass = True
                     if l.find('def') >= 0 and hasmdPy and l.find('__init__') == -1:
-                        func = re.split('def |\(|:',l)[1]
                         x = mdPyNode.mdPyNode()
+                        line = re.split('def |\(|:|\)',l)
+                        func = line[1]
+                        x.name = func
+                        inputs = line[2]
+                        inputList = re.split(',',inputs)
+                        for inpt in inputList:
+                            inpt = inpt.replace(' ','')
+                            inptL = re.split('=',inpt)
+                            if inptL[0] != 'self':
+                                if len(inptL) > 1:
+                                    try:
+                                        x.inputDict.update({inptL[0]:float(inptL[1])})
+                                    except:
+                                        x.inputDict.update({inptL[0]:inptL[1]})
+                                else:
+                                    x.inputDict.update({inptL[0]:0})
                         nodes[mname][c].update({func:x})
-                        #clss = getattr(module,c)
-                        #print(module)
-                        #print(clss)
-                        #function = getattr(clss,func)
-                        #self.functions.update({func:function})
                         isClass = False
+                        isFunc = True
+                    elif l.find('__init__') >= 0:
+                        isFunc = False
+                    if l.find('return') >= 0 and isFunc:
+                        line = re.split('return',l)
+                        ret =  line[1].replace(' ','')
+                        outs = {}
+                        if ret.find(',') >= 0:
+                            rets = re.split(',',ret)
+                            for retur in rets:
+                                outs.update({retur:0})
+                        else:
+                            outs = {'out':0}
+                        x.outputDict.update(outs)
                     if l.find('"""') >= 0:
                         tt = re.split('"""',l)[1]
                         if isClass:
@@ -260,6 +286,7 @@ class mdPyNodeRender:
         bg.text(self.sketchName,100 + self.maxWInputs + 4 + 7,txth+5)
         self.buttons.append(button(self.renameSketch,100 + self.maxWInputs + 4 + 5,5,wt,txth,'rename the sketch'))
         
+        # Setup the options dictionary
         lineY = 0 + scrollOff
         bg.fill(color(255))
         for x in range(len(self.optionsDict)):
@@ -269,12 +296,13 @@ class mdPyNodeRender:
             for y in range(len(self.optionsDict[fl])):
                 cl = self.optionsDict[fl].keys()[y]
                 bg.text("+ " + self.optionsDict[fl].keys()[y],20,lineY + txth)
-                self.buttons.append(button(lambda: False,20,lineY,textWidth("+ " + cl)+8,txth,self.tooltips[cl]))
+                self.buttons.append(button(lambda: False,20,lineY,textWidth("+ " + cl)+8,txth,self.tooltips[cl],0.5,'class'))
                 lineY += txth + 3
                 for z in range(len(self.optionsDict[fl][cl])):
                     funName = self.optionsDict[fl][cl].keys()[z]
+                    func = self.optionsDict[fl][cl][funName]
                     bg.text("- " + funName,30,lineY + txth)
-                    self.buttons.append(button(lambda: False,30,lineY,textWidth("- " + funName)+8,txth,self.tooltips[funName]))
+                    self.buttons.append(button(func,30,lineY,textWidth("- " + funName)+8,txth,self.tooltips[funName],0.5,'function'))
                     lineY += txth + 1
         bg.endDraw()
         image(bg,0,0)
@@ -331,9 +359,11 @@ def mousePressed():
     global dragged
     global mStart
     mStart = PVector(mouseX,mouseY)
-    for button in pn.buttons:
-        if button.hover == True:
-            dragged = button
+    for btn in pn.buttons:
+        if btn.hover == True:
+            dragged = btn
+            return
+    dragged = button()
     
 def mouseReleased():
     global bz
@@ -341,7 +371,7 @@ def mouseReleased():
         #deal with it in click...
         pass
     else:
-        print(dragged)
+        pass
     bz.beginDraw()
     bz.clear()
     bz.endDraw()
@@ -349,20 +379,28 @@ def mouseReleased():
 def mouseDragged():
     global bz
     global mPrev
-    mCurr = PVector(mouseX,mouseY)
-    smooth = PVector.dist(mStart,mCurr)/2
-    bz.beginDraw()
-    if PVector.dist(mPrev,mCurr) > 0.1:
+    global dragged
+    if dragged.type == 'function':
+        bz.beginDraw()
         bz.clear()
-    if mCurr.x < mStart.x:
-        smooth = -smooth
-    bz.noFill()
-    bz.stroke(255)
-    bz.strokeWeight(2)
-    bz.bezier(mStart.x, mStart.y, mStart.x+smooth, mStart.y, mouseX-smooth, mouseY, mouseX, mouseY)
-    bz.endDraw()
-    image(bz,0,0)
-    mPrev = mCurr
+        bz.translate(mouseX-10,mouseY-10)
+        dragged.function.draw(bz)
+        bz.endDraw()
+    else:
+        mCurr = PVector(mouseX,mouseY)
+        smooth = PVector.dist(mStart,mCurr)/2
+        bz.beginDraw()
+        if PVector.dist(mPrev,mCurr) > 0.1:
+            bz.clear()
+        if mCurr.x < mStart.x:
+            smooth = -smooth
+        bz.noFill()
+        bz.stroke(255)
+        bz.strokeWeight(2)
+        bz.bezier(mStart.x, mStart.y, mStart.x+smooth, mStart.y, mouseX-smooth, mouseY, mouseX, mouseY)
+        bz.endDraw()
+        image(bz,0,0)
+        mPrev = mCurr
 
 def mouseWheel(event):
     global scrollOff
