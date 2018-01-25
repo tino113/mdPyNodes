@@ -59,5 +59,8 @@ class button():
 
     def onClick(self):
         self.function()
+
+    def onDoubleClick(self):
+        self.function()
         
             

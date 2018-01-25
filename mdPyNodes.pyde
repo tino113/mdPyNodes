@@ -31,6 +31,7 @@ pg = '' #Buttons
 bg = '' #Background
 ig = '' #Input
 bz = '' #Bezier
+tmpNd = ''
 dragged = button()
 mStart = PVector(0,0)
 mPrev = PVector(0,0)
@@ -309,13 +310,14 @@ class mdPyNodeRender:
 
         # Draw the Nodes
         for nds in self.nodes:
-        	nd = createGraphics(width, height)
-        	nd.beginDraw()
-        	nd.clear()
-        	nd.translate(nds.loc.x-10,nds.loc.y-10)
-        	nds.draw(nd)
-        	nd.endDraw()
-        	bg.image(nd,0,0)
+            nd = createGraphics(width, height)
+            nd.beginDraw()
+            nd.clear()
+            nd.translate(nds.loc.x-10,nds.loc.y-10)
+            sz = nds.draw(nd)
+            nd.endDraw()
+            bg.image(nd,0,0)
+            self.buttons.append(button(nds,nds.loc.x-10,nds.loc.y-10,sz[0],sz[1],'',0.5,'node'))
         bg.endDraw()
         image(bg,0,0)
         
@@ -370,10 +372,16 @@ def mouseClicked():
 def mousePressed():
     global dragged
     global mStart
+    global tmpNd
+    global bg
     mStart = PVector(mouseX,mouseY)
     for btn in pn.buttons:
         if btn.hover == True:
             dragged = btn
+            if dragged.type == 'node':
+                pn.nodes.remove(dragged.function)
+                pn.render(bg)
+                tmpNd = copy(dragged.function)
             return
     dragged = button()
     
@@ -381,6 +389,7 @@ def mouseReleased():
     global bz
     global pn
     global bg
+    global tmpNd
     if PVector.dist(mStart,PVector(mouseX,mouseY)) < 5:
         #deal with it in click...
         pass
@@ -390,12 +399,17 @@ def mouseReleased():
             newNode.loc = PVector(mouseX,mouseY)
             pn.nodes.append(newNode)
             pn.render(bg)
+        elif dragged.type == 'node':
+            tmpNd.loc = PVector(mouseX,mouseY)
+            pn.nodes.append(tmpNd)
+            pn.render(bg)
     bz.beginDraw()
     bz.clear()
     bz.endDraw()
 
 def mouseDragged():
     global bz
+    global bg
     global mPrev
     global dragged
     if dragged.type == 'function':
@@ -404,6 +418,14 @@ def mouseDragged():
         bz.translate(mouseX-10,mouseY-10)
         dragged.function.draw(bz)
         bz.endDraw()
+    elif dragged.type == 'node':
+        dragged.function.loc = PVector(mouseX-10,mouseY-10)
+        bz.beginDraw()
+        bz.clear()
+        bz.translate(mouseX-10,mouseY-10)
+        dragged.function.draw(bz)
+        bz.endDraw()
+        #pn.render(bg)
     else:
         mCurr = PVector(mouseX,mouseY)
         smooth = PVector.dist(mStart,mCurr)/2
