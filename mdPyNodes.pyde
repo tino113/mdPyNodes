@@ -317,7 +317,7 @@ class mdPyNodeRender:
             sz = nds.draw(nd)
             nd.endDraw()
             bg.image(nd,0,0)
-            self.buttons.append(button(nds,nds.loc.x-10,nds.loc.y-10,sz[0],sz[1],'',0.5,'node'))
+            self.buttons.append(button(nds,nds.loc.x-10,nds.loc.y-10,sz[0],20,'',0.5,'node'))
         bg.endDraw()
         image(bg,0,0)
         
@@ -365,15 +365,18 @@ def draw():
     prevH = height
 
 def mouseClicked():
+    print("CLICKED!")
     for button in pn.buttons:
         if button.hover == True:
             button.onClick()
             
 def mousePressed():
+    print("PRESSED!")
     global dragged
     global mStart
     global tmpNd
     global bg
+    global bz
     mStart = PVector(mouseX,mouseY)
     for btn in pn.buttons:
         if btn.hover == True:
@@ -381,11 +384,17 @@ def mousePressed():
             if dragged.type == 'node':
                 pn.nodes.remove(dragged.function)
                 pn.render(bg)
+                bz.beginDraw()
+                bz.clear()
+                bz.translate(mouseX-10,mouseY-10)
+                dragged.function.draw(bz)
+                bz.endDraw()
                 tmpNd = copy(dragged.function)
             return
     dragged = button()
     
 def mouseReleased():
+    print("RELEASED!")
     global bz
     global pn
     global bg

@@ -28,7 +28,7 @@ class button():
                 self.tooltipDisplayed = False
                 self.hoverStart = datetime.datetime.now()
             elif datetime.datetime.now() - self.hoverStart >= datetime.timedelta(seconds=self.tooltipTime):
-                if self.tooltipDisplayed == False:
+                if self.tooltipDisplayed == False and self.tooltip != '':
                     pg.beginDraw()
                     pg.textSize(15)
                     x1=self.x+self.w

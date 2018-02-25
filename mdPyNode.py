@@ -23,6 +23,10 @@ class mdPyNode():
         s += " function: " + str(self.function)
         return s
 
+    def __call__(self):
+        print(self)
+        pass
+
     def draw(self,layer):
         maxLH = (len(self.inputDict) + len(self.outputDict)) * 14 + 20
         wdth = 100
