@@ -264,6 +264,7 @@ class mdPyNodeRender:
             bg.text(inpt,102,lineCount + 5 + 15 * 2)
             bg.fill(color(220))
             bg.ellipse(95+self.maxWInputs, lineCount + 1 + 15 * 2, 8, 8)
+            self.buttons.append(button(self,95+self.maxWInputs, lineCount + 1 + 15 * 2, 8, 8,'',0.5,'input'))
             lineCount += 16
 
         lineCount = 0
@@ -273,6 +274,7 @@ class mdPyNodeRender:
             bg.text(outpt,width-self.maxWOutputs +10,lineCount + 5 + 15 * 2)
             bg.fill(color(220))
             bg.ellipse(width-self.maxWOutputs + 2, lineCount + 1 + 15 * 2, 8, 8)
+            self.buttons.append(button(self,width-self.maxWOutputs + 2, lineCount + 1 + 15 * 2, 8, 8,'',0.5,'output'))
             lineCount += 16
 
         bg.text("+",width-txth+1,txth)
@@ -314,10 +316,27 @@ class mdPyNodeRender:
             nd.beginDraw()
             nd.clear()
             nd.translate(nds.loc.x-10,nds.loc.y-10)
-            sz = nds.draw(nd)
+            ndDrw = nds.draw(nd)
             nd.endDraw()
             bg.image(nd,0,0)
+<<<<<<< Updated upstream
             self.buttons.append(button(nds,nds.loc.x-10,nds.loc.y-10,sz[0],20,'',0.5,'node'))
+=======
+            self.buttons.append(button(nds,nds.loc.x-10,nds.loc.y-10,ndDrw[0],20,'',0.5,'node'))
+            i = 0
+            for inpts in ndDrw[2]:
+                self.buttons.append(button(nds.inputDict.items()[i],nds.loc.x-15+inpts.x,nds.loc.y-15+inpts.y,8,8,'',0.5,'input'))
+                i += 1
+            i = 0
+            for outpts in ndDrw[3]:
+                self.buttons.append(button(nds.outputDict.items()[i],nds.loc.x-15+outpts.x,nds.loc.y-15+outpts.y,8,8,'',0.5,'output'))
+                i += 1
+
+        #Debug Draw all Buttons
+        #for btns in self.buttons:
+        #    btns.debugDraw(bg)
+
+>>>>>>> Stashed changes
         bg.endDraw()
         image(bg,0,0)
         
@@ -390,6 +409,12 @@ def mousePressed():
                 dragged.function.draw(bz)
                 bz.endDraw()
                 tmpNd = copy(dragged.function)
+            elif dragged.type == 'input':
+                print("Start Connection Reverse")
+                mStart = PVector(dragged.x+dragged.w/2,dragged.y+dragged.h/2)
+            elif dragged.type == 'output':
+                print("Start Connection")
+                mStart = PVector(dragged.x+dragged.w/2,dragged.y+dragged.h/2)
             return
     dragged = button()
     
@@ -412,6 +437,11 @@ def mouseReleased():
             tmpNd.loc = PVector(mouseX,mouseY)
             pn.nodes.append(tmpNd)
             pn.render(bg)
+        elif dragged.type == 'input':
+            # TODO: get this working and connecting
+            pass
+        elif dragged.type == 'output':
+            pass
     bz.beginDraw()
     bz.clear()
     bz.endDraw()

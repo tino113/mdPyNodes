@@ -17,10 +17,11 @@ class button():
         self.type = btype
         self.drawn = False
         
-    def debugDraw(self):
-        pg.beginDraw()
-        pg.rect(self.x,self.y,self.w,self.h)
-        pg.endDraw()
+    def debugDraw(self,layer):
+        layer.beginDraw()
+        layer.fill(color(255,255,255,100))
+        layer.rect(self.x,self.y,self.w,self.h)
+        layer.endDraw()
         
     def over(self,pg):
         if (mouseX >= self.x and mouseX <= self.x+self.w and mouseY >= self.y and mouseY <= self.y+self.h):
